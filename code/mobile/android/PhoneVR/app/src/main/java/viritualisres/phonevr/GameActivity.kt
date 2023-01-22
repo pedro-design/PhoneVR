@@ -31,7 +31,7 @@ import javax.microedition.khronos.opengles.GL10
 
 class GameActivity : Activity(), SensorEventListener {
 
-    private lateinit var sensMgr: SensorManager
+    private lateinit var sensMgrsensMgr: SensorManager
     private lateinit var prefs: SharedPreferences
     private lateinit var surf: GLSurfaceView
     private lateinit var gvrLayout: GvrLayout
