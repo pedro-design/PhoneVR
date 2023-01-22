@@ -23,33 +23,33 @@
     <ProjectGuid>{EECAFA17-E17D-4D6A-898F-DA593C98D0E2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PhoneVR</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <ProjectName>driver_PVRServer</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -110,7 +110,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0601;_DEBUG;_WINDOWS;_USRDLL;PHONEVR_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\$(ProjectName);$(SolutionDir)\..\..\common\src;$(SolutionDir)\..\libs\json;$(SolutionDir)\..\libs\x264\include;$(SolutionDir)\..\..\common\libs\asio;$(SolutionDir)\..\..\common\libs\eigen;$(SolutionDir)\..\..\common\src\Utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,7 +149,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_WIN32_WINNT=0x0601;NDEBUG;_WINDOWS;_USRDLL;PHONEVR_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\$(ProjectName);$(SolutionDir)\..\..\common\src;$(SolutionDir)\..\libs\json;$(SolutionDir)\..\libs\x264\include;$(SolutionDir)\..\..\common\libs\asio;$(SolutionDir)\..\..\common\libs\eigen;$(SolutionDir)\..\..\common\src\Utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -164,6 +164,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\common\src\PVRGlobals.cpp" />
     <ClCompile Include="..\..\..\common\src\PVRSocketUtils.cpp" />
+    <ClCompile Include="..\..\libs\Fusion\FusionAhrs.c" />
+    <ClCompile Include="..\..\libs\Fusion\FusionCompass.c" />
+    <ClCompile Include="..\..\libs\Fusion\FusionOffset.c" />
     <ClCompile Include="driver.cpp" />
     <ClCompile Include="PVRGraphics.cpp" />
     <ClCompile Include="PVRMath.cpp" />
@@ -174,6 +177,14 @@
     <ClInclude Include="..\..\..\common\src\PVRSocketUtils.h" />
     <ClInclude Include="..\..\..\common\src\Utils\StrUtils.h" />
     <ClInclude Include="..\..\..\common\src\Utils\ThreadUtils.h" />
+    <ClInclude Include="..\..\libs\Fusion\Fusion.h" />
+    <ClInclude Include="..\..\libs\Fusion\FusionAhrs.h" />
+    <ClInclude Include="..\..\libs\Fusion\FusionAxes.h" />
+    <ClInclude Include="..\..\libs\Fusion\FusionCalibration.h" />
+    <ClInclude Include="..\..\libs\Fusion\FusionCompass.h" />
+    <ClInclude Include="..\..\libs\Fusion\FusionMath.h" />
+    <ClInclude Include="..\..\libs\Fusion\FusionOffset.h" />
+    <ClInclude Include="batery.h" />
     <ClInclude Include="openvr_driver.h" />
     <ClInclude Include="PVRGraphics.h" />
     <ClInclude Include="PVRFileManager.h" />

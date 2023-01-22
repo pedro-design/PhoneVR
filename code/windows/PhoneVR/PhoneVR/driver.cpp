@@ -8,6 +8,7 @@
 #include "PVRGraphics.h"
 #include "PVRFileManager.h"
 #include "PVRMath.h"
+#include "batery.h"
 
 using namespace std;
 using namespace std::this_thread;
@@ -18,10 +19,12 @@ using namespace vr;
 namespace {
 }
 
+
 class HMD : public ITrackedDeviceServerDriver, public IVRDisplayComponent, public IVRVirtualDisplay { // todo: try to remove IVRDisplayComponent
 	
 	float projRect[4]; // left eye viewport, flip 
 	float poseTmOffS;
+	float prev_bat_level= 0.0;
 
 	microseconds vstreamDT;
 
@@ -40,6 +43,8 @@ class HMD : public ITrackedDeviceServerDriver, public IVRDisplayComponent, publi
 	unique_ptr<TimeBomb> addDataBomb;
 
 	DriverPose_t pose = {};
+
+	batery_deamon hdm_batery;
 
 	//std::mutex mxaddDataRcvd;
 	bool addDataRcvd = false;
@@ -113,6 +118,12 @@ public:
 		pose.qWorldFromDriverRotation = { 1.0, 0.0, 0.0, 0.0 };
 		pose.qDriverFromHeadRotation = { 1.0, 0.0, 0.0, 0.0 };
 		pose.qRotation = { 1.0, 0.0, 0.0, 0.0 };
+
+		pose.vecPosition[0] = 0.0;//x
+		pose.vecPosition[1] = 0.0;//y
+		pose.vecPosition[2] = 0.0;//z
+
+
 		pose.result = TrackingResult_Running_OK;
 		pose.poseIsValid = true;
 		pose.willDriftInYaw = false;
@@ -155,13 +166,13 @@ public:
 		VRProperties()->SetStringProperty(propCont, Prop_ManufacturerName_String, "Viritualis Res");
 		VRProperties()->SetBoolProperty(propCont, Prop_DeviceIsWireless_Bool, true);
 		VRProperties()->SetBoolProperty(propCont, Prop_DeviceIsCharging_Bool, false);
-		VRProperties()->SetFloatProperty(propCont, Prop_DeviceBatteryPercentage_Float, 1); //TODO get from phone
+		VRProperties()->SetFloatProperty(propCont, Prop_DeviceBatteryPercentage_Float, hdm_batery.level); //TODO get from phone
 		VRProperties()->SetBoolProperty(propCont, Prop_Firmware_UpdateAvailable_Bool, false);//TODO implement
 		VRProperties()->SetBoolProperty(propCont, Prop_Firmware_ManualUpdate_Bool, true);
 		VRProperties()->SetBoolProperty(propCont, Prop_BlockServerShutdown_Bool, false);
 		VRProperties()->SetBoolProperty(propCont, Prop_CanUnifyCoordinateSystemWithHmd_Bool, true);
 		VRProperties()->SetBoolProperty(propCont, Prop_ContainsProximitySensor_Bool, false);
-		VRProperties()->SetBoolProperty(propCont, Prop_DeviceProvidesBatteryStatus_Bool, false); //TODO implement and then set to true
+		VRProperties()->SetBoolProperty(propCont, Prop_DeviceProvidesBatteryStatus_Bool, true); //TODO implement and then set to true
 		VRProperties()->SetBoolProperty(propCont, Prop_DeviceCanPowerOff_Bool, true);
 		//VRProperties()->SetInt32Property(propCont, Prop_DeviceClass_Int32, TrackedDeviceClass_HMD);
 		VRProperties()->SetBoolProperty(propCont, Prop_HasCamera_Bool, false);
@@ -216,7 +227,7 @@ public:
 				talker.send(PVR_MSG::HEADER_NALS, v);
 			}, [=] { terminate(); });
 
-			PVRStartReceiveData(devIP, &pose, &objId);
+			PVRStartReceiveData(devIP, &pose, &objId,&hdm_batery);
 
 			PVR_DB_I("[Activating HMD]: HMD activated with id: " + to_string(objectId));
 
@@ -318,6 +329,7 @@ public:
 	}
 
 	// logic to get the most recent orientation quaternion associated with the frame
+	
 	virtual void Present(SharedTextureHandle_t backBuffer) override {
 		//PVR_DB("present1");
 		//waitForPresent = true;
@@ -335,7 +347,13 @@ public:
 		//}
 		while (Clk::now() - oldTime < vstreamDT - 1ms)
 			sleep_for(1ms);
-
+		if( hdm_batery.level != prev_bat_level){
+			PVR_DB_I("[HMD::batery_deamon]: got new batery info ");
+			PVR_DB_I(hdm_batery.level);
+			prev_bat_level = hdm_batery.level;
+			VRProperties()->SetFloatProperty(propCont, Prop_DeviceBatteryPercentage_Float, hdm_batery.level);
+		}
+		
 		//newFrameQuat = Quaternionf(latestQuat); // poll here the quaternion used in the next frame
 		//VRServerDriverHost()->TrackedDevicePoseUpdated(objId, GetPose(), sizeof(DriverPose_t));
 		//waitForPresent = false;
@@ -395,6 +413,7 @@ public:
 					}
 					else
 						hmdBomb.defuse();
+			
 				}
 				else
 				{

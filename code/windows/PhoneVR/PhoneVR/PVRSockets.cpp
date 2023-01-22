@@ -8,9 +8,13 @@
 #include "PVRGraphics.h"
 #include "PVRMath.h"
 #include "PVRFileManager.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include "batery.h"
 
 extern "C" {
 #include "x264.h"
+
 }
 
 #pragma comment(lib, "x264.lib")
@@ -54,6 +58,9 @@ namespace {
 	float fpsStreamer = 0.0;
 	float fpsStreamWriter = 0.0;
 	float fpsEncoder = 0.0;
+	
+//	FusionAhrs ahrs;
+	//FusionAhrsInitialise(&ahrs);
 }
 
 float fpsRenderer = 0.0;
@@ -383,7 +390,7 @@ void PVRStopStreamer() {
 }
 
 
-void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId) {
+void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , batery_deamon *hdm_batery ) {
 	float addLatency = 0;
 
 	PVR_DB_I("[PVRStartReceiveData] UDP receive started");
@@ -398,10 +405,9 @@ void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId) {
 
 			uint8_t buf[256];
 			auto quatBuf = reinterpret_cast<float *>(&buf[0]);
-			//auto accBuf = reinterpret_cast<float *>(&buf[4 * 4]);
+			auto accBuf = reinterpret_cast<float *>(&buf[4 * 4]);
 			auto tmBuf = reinterpret_cast<long long *>(&buf[4 * 4 + 3 * 4]);
-
-
+			auto batery = reinterpret_cast<float *>(&buf[4 * 4 + 3 * 4 + 4 * 4]);
 
 			while (dataRunning) {
 				function<void(const asio::error_code &, size_t)> handle = [&](auto, auto pktSz) {
@@ -411,8 +417,11 @@ void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId) {
 						//if (isValidOrient(quat))// check if quat is valid
 						pose->qRotation = { quatBuf[0], quatBuf[1], quatBuf[2], quatBuf[3] }; // w x y z
 						pose->poseTimeOffset = float(Clk::now().time_since_epoch().count() - *tmBuf) / 1'000'000'000.f + addLatency; // Clk and tmBuf is in nanoseconds
-						vr::VRServerDriverHost()->TrackedDevicePoseUpdated(*objId, *pose, sizeof(vr::DriverPose_t));
+						
+						hdm_batery->level = batery[0];
 
+						vr::VRServerDriverHost()->TrackedDevicePoseUpdated(*objId, *pose, sizeof(vr::DriverPose_t));
+						
 						skt.async_receive(buffer(buf), handle);
 					}
 				};

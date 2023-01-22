@@ -1,0 +1,53 @@
+﻿  PVRSockets.cpp
+  driver.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2468,23): warning C4244: 'argumento': conversión de 'wchar_t' a 'const _Elem'; posible pérdida de datos
+          with
+          [
+              _Elem=char
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2479): message : Vea la referencia a la creación de una instancia de la función plantilla "void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct<wchar_t*>(_Iter,const _Iter,std::input_iterator_tag)" que se está compilando
+          with
+          [
+              _Iter=wchar_t *
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2479): message : Vea la referencia a la creación de una instancia de la función plantilla "void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct<wchar_t*>(_Iter,const _Iter,std::input_iterator_tag)" que se está compilando
+          with
+          [
+              _Iter=wchar_t *
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2459): message : Vea la referencia a la creación de una instancia de la función plantilla "void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct<wchar_t*>(const _Iter,const _Iter,std::forward_iterator_tag)" que se está compilando
+          with
+          [
+              _Iter=wchar_t *
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xstring(2459): message : Vea la referencia a la creación de una instancia de la función plantilla "void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct<wchar_t*>(const _Iter,const _Iter,std::forward_iterator_tag)" que se está compilando
+          with
+          [
+              _Iter=wchar_t *
+          ]
+C:\Users\pedro\Desktop\phonevr windows\common\src\PVRGlobals.h(47): message : Vea la referencia a la creación de una instancia de la función plantilla "std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,0>(_Iter,_Iter,const _Alloc &)" que se está compilando
+          with
+          [
+              _Elem=wchar_t,
+              _Iter=std::_String_iterator<std::_String_val<std::_Simple_types<wchar_t>>>,
+              _Alloc=std::allocator<char>
+          ]
+C:\Users\pedro\Desktop\phonevr windows\common\src\PVRGlobals.h(47): message : Vea la referencia a la creación de una instancia de la función plantilla "std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,0>(_Iter,_Iter,const _Alloc &)" que se está compilando
+          with
+          [
+              _Elem=wchar_t,
+              _Iter=std::_String_iterator<std::_String_val<std::_Simple_types<wchar_t>>>,
+              _Alloc=std::allocator<char>
+          ]
+     Creando biblioteca C:\Users\pedro\Desktop\phonevr windows\windows\PhoneVR\Release\x64\driver_PVRServer.lib y objeto C:\Users\pedro\Desktop\phonevr windows\windows\PhoneVR\Release\x64\driver_PVRServer.exp
+  Generando código
+  48 of 3840 functions ( 1.2%) were compiled, the rest were copied from previous compilation.
+    46 functions were new in current compilation
+    2 functions had inline decision re-evaluated but remain unchanged
+  Generación de código finalizada
+  PhoneVR.vcxproj -> C:\Users\pedro\Desktop\phonevr windows\windows\PhoneVR\Release\x64\driver_PVRServer.dll
+  C:\Users\pedro\Desktop\phonevr windows\windows\PhoneVR\Release\x64\driver_PVRServer.dll
+  C:\Users\pedro\Desktop\phonevr windows\windows\PhoneVR\Release\x64\driver_PVRServer.exp
+  C:\Users\pedro\Desktop\phonevr windows\windows\PhoneVR\Release\x64\driver_PVRServer.lib
+  C:\Users\pedro\Desktop\phonevr windows\windows\PhoneVR\Release\x64\driver_PVRServer.pdb
+  4 archivo(s) copiado(s)
