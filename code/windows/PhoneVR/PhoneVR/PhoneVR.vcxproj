@@ -164,9 +164,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\common\src\PVRGlobals.cpp" />
     <ClCompile Include="..\..\..\common\src\PVRSocketUtils.cpp" />
-    <ClCompile Include="..\..\libs\Fusion\FusionAhrs.c" />
-    <ClCompile Include="..\..\libs\Fusion\FusionCompass.c" />
-    <ClCompile Include="..\..\libs\Fusion\FusionOffset.c" />
     <ClCompile Include="driver.cpp" />
     <ClCompile Include="PVRGraphics.cpp" />
     <ClCompile Include="PVRMath.cpp" />
@@ -177,14 +174,7 @@
     <ClInclude Include="..\..\..\common\src\PVRSocketUtils.h" />
     <ClInclude Include="..\..\..\common\src\Utils\StrUtils.h" />
     <ClInclude Include="..\..\..\common\src\Utils\ThreadUtils.h" />
-    <ClInclude Include="..\..\libs\Fusion\Fusion.h" />
-    <ClInclude Include="..\..\libs\Fusion\FusionAhrs.h" />
-    <ClInclude Include="..\..\libs\Fusion\FusionAxes.h" />
-    <ClInclude Include="..\..\libs\Fusion\FusionCalibration.h" />
-    <ClInclude Include="..\..\libs\Fusion\FusionCompass.h" />
-    <ClInclude Include="..\..\libs\Fusion\FusionMath.h" />
-    <ClInclude Include="..\..\libs\Fusion\FusionOffset.h" />
-    <ClInclude Include="batery.h" />
+    <ClInclude Include="battery.h" />
     <ClInclude Include="openvr_driver.h" />
     <ClInclude Include="PVRGraphics.h" />
     <ClInclude Include="PVRFileManager.h" />

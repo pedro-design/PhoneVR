@@ -8,7 +8,7 @@
 #include "PVRGraphics.h"
 #include "PVRFileManager.h"
 #include "PVRMath.h"
-#include "batery.h"
+#include "battery.h"
 
 using namespace std;
 using namespace std::this_thread;
@@ -44,7 +44,7 @@ class HMD : public ITrackedDeviceServerDriver, public IVRDisplayComponent, publi
 
 	DriverPose_t pose = {};
 
-	batery_deamon hdm_batery;
+	battery_deamon hdm_batery;
 
 	//std::mutex mxaddDataRcvd;
 	bool addDataRcvd = false;

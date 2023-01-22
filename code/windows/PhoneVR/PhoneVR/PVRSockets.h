@@ -5,7 +5,7 @@
 
 #include "PVRGlobals.h"
 #include "PVRSocketUtils.h"
-#include "batery.h"
+#include "battery.h"
 
 
 
@@ -16,5 +16,5 @@ void PVRStartStreamer(std::string ip, uint16_t width, uint16_t height, std::func
 void PVRProcessFrame(uint64_t hdl, Eigen::Quaternionf quat);
 void PVRStopStreamer();
 
-void PVRStartReceiveData(std::string ip, vr::DriverPose_t *pose, uint32_t *objId, batery_deamon * hdm_batery);
+void PVRStartReceiveData(std::string ip, vr::DriverPose_t *pose, uint32_t *objId, battery_deamon* hdm_batery);
 void PVRStopReceiveData();

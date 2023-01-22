@@ -10,7 +10,7 @@
 #include "PVRFileManager.h"
 #include <stdbool.h>
 #include <stdio.h>
-#include "batery.h"
+#include "battery.h"
 
 extern "C" {
 #include "x264.h"
@@ -390,7 +390,7 @@ void PVRStopStreamer() {
 }
 
 
-void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , batery_deamon *hdm_batery ) {
+void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , battery_deamon *hdm_batery ) {
 	float addLatency = 0;
 
 	PVR_DB_I("[PVRStartReceiveData] UDP receive started");
