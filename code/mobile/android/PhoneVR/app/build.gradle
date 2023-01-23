@@ -21,9 +21,9 @@ android {
     compileSdkVersion 30
     defaultConfig {
         applicationId "viritualisres.phonevr"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 30
-        versionCode Integer.valueOf(System.env.APPVEYOR_BUILD_NUMBER ?: 0)
+        versionCode Integer.valueOf(System.env.APPVEYOR_BUILD_NUMBER ?: 24)
         versionName System.getenv("APPVEYOR_PVR_TAG")
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         externalNativeBuild {
@@ -47,7 +47,6 @@ android {
             jniDebuggable true
             renderscriptDebuggable true
             minifyEnabled false
-            useProguard false
             externalNativeBuild {
                 cmake {
                     cppFlags += "-D_DEBUG=1"
@@ -97,6 +96,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation 'com.google.vr:sdk-base:1.101.0'
+    implementation 'com.google.ar:core:1.35.0'
+  //  natives 'com.google.ar:core:1.33.0'
 
     def acraVersion = '5.7.0'
     implementation "ch.acra:acra-mail:$acraVersion"

@@ -15,7 +15,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 
-import viritualisres.phonevr.BuildConfig;
+import viritualisres.phonevr.BuildConfig
+;
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,6 +39,10 @@ class MainActivity : AppCompatActivity() {
             when (PackageManager.PERMISSION_DENIED) {
                 checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) -> {
                     requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE)
+                }
+
+                checkSelfPermission(android.Manifest.permission.CAMERA) -> {
+                    requestPermissions(arrayOf(Manifest.permission.CAMERA, Manifest.permission.BIND_VR_LISTENER_SERVICE), REQUEST_CODE)
                 }
             }
         }

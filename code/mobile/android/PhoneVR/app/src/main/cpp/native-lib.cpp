@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <android/log.h>
 
+
 using namespace std;
 using namespace Eigen;
 using namespace gvr;
@@ -28,6 +29,7 @@ namespace {
     jclass javaWrap;
 
     float newAcc[3];
+    float batery_charge[3];
     uint16_t vPort = 0;
 
 
@@ -310,9 +312,12 @@ SUB(startSendSensorData)(JNIEnv *env, jclass, jint port) {
     PVR_DB_I("JNI startSendSensorData " + to_string(port));
 
     try {
-        PVRStartSendSensorData(port, [](float *quat, float *acc) {
+
+        PVRStartSendSensorData(port, [](float *quat, float *acc, float *bat) {
             if (gvrApi) {
                 auto gmat = gvrApi->GetHeadSpaceFromStartSpaceRotation(GvrApi::GetTimePointNow());
+                ////  gvrApi->GetHeadSpaceFromStartSpaceTransform()
+               ///// GetHeadSpaceFromStartSpaceRotation
                 Quaternionf equat(Map<Matrix3f>(GetMat3(gmat.m).data()));
 
                 quat[0] = equat.w();
@@ -320,6 +325,8 @@ SUB(startSendSensorData)(JNIEnv *env, jclass, jint port) {
                 quat[2] = equat.y();
                 quat[3] = equat.z();
                 memcpy(acc, newAcc, 3 * 4);
+                bat[0] = batery_charge[0];
+                //bat = 0.6;
                 return true;
             }
             return false;
@@ -344,6 +351,24 @@ SUB(setAccData)(JNIEnv *env, jclass, jfloatArray jarr) {
         PVR_DB_I("JNI_setAccData:: Caught Exception: " + string(e.what()));
     }
 }
+
+SUB(setBatData)(JNIEnv *env, jclass, float jarr) {
+    //PVR_DB("JNI setAccData");
+    try {
+        //auto *batArr = env->GetFloatArrayElements(jarr, nullptr);
+        if( jarr == NULL ) {
+            PVR_DB("JNI_setBatData:: GetFloatArrayElements returned NULL value ");
+        }
+        batery_charge[0]=jarr;
+      //  memcpy(batery_charge, batArr, 3 * 4);
+        //env->ReleaseFloatArrayElements(jarr, batArr, JNI_ABORT);
+    }
+    catch(exception e){
+        PVR_DB_I("JNI_setBatData:: Caught Exception: " + string(e.what()));
+    }
+}
+
+
 
 ///////////////////////////////////// system control & events /////////////////////////////////////
 SUB(createRenderer)(JNIEnv *, jclass, jlong jGvrApi) {

@@ -66,6 +66,8 @@ internal object Wrap {
 
     external fun setAccData(data: FloatArray)
 
+    external fun setBatData(data: Float)
+
     external fun startAnnouncer(pcIP: String, port: Int)
 
     external fun stopAnnouncer()

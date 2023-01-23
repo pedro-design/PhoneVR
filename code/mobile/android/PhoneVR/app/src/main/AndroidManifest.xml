@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_LOGS" />
 
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.ar" android:required="true"/>
+
     <uses-feature android:glEsVersion="0x00030000" android:required="true" />
     <uses-feature android:name="android.software.vr.mode" android:required="false"/>
     <uses-feature android:name="android.hardware.vr.high_performance" android:required="false"/>
@@ -17,7 +20,9 @@
     <uses-feature android:name="android.hardware.sensor.compass" android:required="false"/>
 
 
-    <application
+
+
+<application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -64,6 +69,7 @@
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance" />
+      <meta-data android:name="com.google.ar.core" android:value="true" />
     </application>
 
 </manifest>

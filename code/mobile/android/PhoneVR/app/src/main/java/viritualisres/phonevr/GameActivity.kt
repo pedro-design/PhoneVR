@@ -18,27 +18,52 @@ import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
 import android.view.WindowInsets
-
 import android.widget.FrameLayout
 import android.widget.TextView
 import com.google.vr.ndk.base.AndroidCompat
 import com.google.vr.ndk.base.GvrLayout
+
+
+import android.content.Intent
+import android.os.BatteryManager
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
+import android.content.ContextWrapper
+import android.content.IntentFilter
 
 import java.util.concurrent.locks.ReentrantLock
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 
-class GameActivity : Activity(), SensorEventListener {
 
-    private lateinit var sensMgrsensMgr: SensorManager
+    class GameActivity : Activity(), SensorEventListener {
+
+    private lateinit var sensMgr: SensorManager
     private lateinit var prefs: SharedPreferences
     private lateinit var surf: GLSurfaceView
     private lateinit var gvrLayout: GvrLayout
 
+
     private var uiFPSTextViewUpdatethread: Thread? = null
     private var fpsMutex: ReentrantLock = ReentrantLock()
     private var fpsResumeMutex: ReentrantLock = ReentrantLock()
+
+
+    private fun getBatteryLevel(): Int {
+            val batteryLevel: Int
+            if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+                val batteryManager = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+                batteryLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            } else {
+                val intent = ContextWrapper(applicationContext).
+                registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                batteryLevel = intent!!.getIntExtra(BatteryManager.EXTRA_LEVEL,
+                    -1) * 100 / intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+            }
+
+            return batteryLevel
+    }
 
     // CPU TimeDelays
     //private var tDelaycRend: Float = 0.0f
@@ -174,11 +199,11 @@ class GameActivity : Activity(), SensorEventListener {
                                         "C| SS: %5.1f SW: %5.1f E: %5.1f VRa: %5.1f\n" +
                                         "---Latency(ms)---\n" +
                                         "C| tSS: %5.1f tE: %5.1f\n" +
-                                        "M| tND: %5.1f tSR: %5.1f",
+                                        "M| tND: %5.1f tSR: %5.1f , bat %5.1f",
                                         lastfpsVals[0].average(), lastfpsVals[1].average(), lastfpsVals[2].average(), clastfpsVals[4].average(),
                                         clastfpsVals[3].average(), clastfpsVals[2].average(), clastfpsVals[1].average(), clastfpsVals[0].average(),
                                         lastctDelaysVals[1].average(), lastctDelaysVals[0].average(),
-                                        lasttDelaysVals[0].average(), lasttDelaysVals[1].average())
+                                        lasttDelaysVals[0].average(), lasttDelaysVals[1].average(),(getBatteryLevel()/100.0f ))
                                         //fpsStreamRecv, fpsDecoder, fpsRenderer,
                                         //cfpsStreamer, cfpsEncoder, cfpsSteamVRApp)
                                 fpsMutex.unlock()
@@ -207,6 +232,12 @@ class GameActivity : Activity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         val acc = sensMgr.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) //Sensor.TYPE_ROTATION_VECTOR for orientation
+     //   val giro = sensMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+      //  val acelerometer = sensMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        // use this 2 sensors to perform sensor fusion in pc
+       // sensMgr.registerListener(this, acelerometer, SensorManager.SENSOR_DELAY_FASTEST, 1000)
+        //sensMgr.registerListener(this, giro, SensorManager.SENSOR_DELAY_FASTEST, 1000)
+        //
         sensMgr.registerListener(this, acc, SensorManager.SENSOR_DELAY_FASTEST, 1000) //max 5ms latency
         gvrLayout.onResume()
         surf.onResume()
@@ -250,8 +281,15 @@ class GameActivity : Activity(), SensorEventListener {
     //SensorEventListener methods
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
+
     override fun onSensorChanged(event: SensorEvent) {
-        Wrap.setAccData(event.values)
+        val type = event.sensor.type
+        val batery_arr = (getBatteryLevel()/100.0f )
+        if (type == Sensor.TYPE_LINEAR_ACCELERATION) {
+
+            Wrap.setAccData(event.values)
+            Wrap.setBatData(batery_arr)
+        }
     }
 
     fun updateFPS(fpsStreamRecvJNI: Float, fpsDecoderJNI: Float, fpsRendererJNI: Float,
