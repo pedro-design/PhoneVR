@@ -4,11 +4,11 @@
     "video_stream_port" : 15243,
     "pose_stream_port" : 51423,
     "pairing_port" : 33333,
-    "connection_timeout" : 5,
+    "connection_timeout" : 60,
     "encoder" : {
         "preset" : "ultrafast",
         "tune" : "zerolatency",
-        "qp" : 20,
+        "qp" : 10,
         "profile" : "baseline"
     }
 }
