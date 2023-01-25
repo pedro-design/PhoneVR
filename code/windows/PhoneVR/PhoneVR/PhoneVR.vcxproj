@@ -175,6 +175,7 @@
     <ClInclude Include="..\..\..\common\src\Utils\StrUtils.h" />
     <ClInclude Include="..\..\..\common\src\Utils\ThreadUtils.h" />
     <ClInclude Include="battery.h" />
+    <ClInclude Include="motion_tracker.h" />
     <ClInclude Include="openvr_driver.h" />
     <ClInclude Include="PVRGraphics.h" />
     <ClInclude Include="PVRFileManager.h" />

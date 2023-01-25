@@ -1,3 +1,5 @@
+#pragma optimize( "f", on )
+#pragma GCC optimize("O2")
 #include "openvr_driver.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -9,6 +11,7 @@
 #include "PVRFileManager.h"
 #include "PVRMath.h"
 #include "battery.h"
+#include "motion_tracker.h"
 
 using namespace std;
 using namespace std::this_thread;
@@ -25,6 +28,7 @@ class HMD : public ITrackedDeviceServerDriver, public IVRDisplayComponent, publi
 	float projRect[4]; // left eye viewport, flip 
 	float poseTmOffS;
 	float prev_bat_level= 0.0;
+	bool init_imu = false;
 
 	microseconds vstreamDT;
 
@@ -43,9 +47,10 @@ class HMD : public ITrackedDeviceServerDriver, public IVRDisplayComponent, publi
 	unique_ptr<TimeBomb> addDataBomb;
 
 	DriverPose_t pose = {};
-
+	//nice features
 	battery_deamon hdm_batery;
-
+	motion_tracker hdm_traker_imu;
+	//
 	//std::mutex mxaddDataRcvd;
 	bool addDataRcvd = false;
 	float ipd = 0.0;
@@ -129,6 +134,7 @@ public:
 		pose.willDriftInYaw = false;
 		pose.shouldApplyHeadModel = false;
 		pose.deviceIsConnected = true;
+		
 
 
 		vstreamDT = 1'000'000us / PVRProp<int>({ GAME_FPS_KEY });
@@ -174,6 +180,7 @@ public:
 		VRProperties()->SetBoolProperty(propCont, Prop_ContainsProximitySensor_Bool, false);
 		VRProperties()->SetBoolProperty(propCont, Prop_DeviceProvidesBatteryStatus_Bool, true); //TODO implement and then set to true
 		VRProperties()->SetBoolProperty(propCont, Prop_DeviceCanPowerOff_Bool, true);
+	
 		//VRProperties()->SetInt32Property(propCont, Prop_DeviceClass_Int32, TrackedDeviceClass_HMD);
 		VRProperties()->SetBoolProperty(propCont, Prop_HasCamera_Bool, false);
 		VRProperties()->SetStringProperty(propCont, Prop_DriverVersion_String, (to_string(PVR_SERVER_VERSION >> 24) + "." + to_string((PVR_SERVER_VERSION >> 16) % 0x100)).c_str());
@@ -227,7 +234,7 @@ public:
 				talker.send(PVR_MSG::HEADER_NALS, v);
 			}, [=] { terminate(); });
 
-			PVRStartReceiveData(devIP, &pose, &objId,&hdm_batery);
+			PVRStartReceiveData(devIP, &pose, &objId,&hdm_batery,&hdm_traker_imu);
 
 			PVR_DB_I("[Activating HMD]: HMD activated with id: " + to_string(objectId));
 
@@ -348,11 +355,16 @@ public:
 		while (Clk::now() - oldTime < vstreamDT - 1ms)
 			sleep_for(1ms);
 		if( hdm_batery.level != prev_bat_level){
-			PVR_DB_I("[HMD::batery_deamon]: got new batery info ");
-			PVR_DB_I(hdm_batery.level);
+			PVR_DB_I("[HMD::batery_deamon]: got new batery info "+ to_string(hdm_batery.level));
 			prev_bat_level = hdm_batery.level;
 			VRProperties()->SetFloatProperty(propCont, Prop_DeviceBatteryPercentage_Float, hdm_batery.level);
 		}
+		if (hdm_traker_imu.calibrated && init_imu==false) {
+			init_imu = true;
+			PVR_DB_I("[HMD::hdm_traker_imu]: got drift data: x " + to_string(hdm_traker_imu.drift[0])+" y "+ to_string(hdm_traker_imu.drift[1])+ " z " +to_string(hdm_traker_imu.drift[2]));
+		}
+		// send the position data
+	
 		
 		//newFrameQuat = Quaternionf(latestQuat); // poll here the quaternion used in the next frame
 		//VRServerDriverHost()->TrackedDevicePoseUpdated(objId, GetPose(), sizeof(DriverPose_t));

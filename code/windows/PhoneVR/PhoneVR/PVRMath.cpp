@@ -1,5 +1,8 @@
 #include "PVRMath.h"
 
+#pragma optimize( "f", on )
+#pragma GCC optimize("O2")
+
 using namespace Eigen;
 
 namespace {

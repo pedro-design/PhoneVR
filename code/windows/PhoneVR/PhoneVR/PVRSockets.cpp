@@ -1,3 +1,6 @@
+#pragma optimize( "f", on )
+#pragma GCC optimize("O2")
+
 #include "PVRSockets.h"
 
 #include <fstream>
@@ -11,6 +14,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "battery.h"
+#include "motion_tracker.h"
 
 extern "C" {
 #include "x264.h"
@@ -187,10 +191,10 @@ void PVRStartStreamer(string ip, uint16_t width, uint16_t height, function<void(
 		par.rc.i_vbv_buffer_size = 20000;
 		par.rc.f_vbv_buffer_init = 0.9f;
 
-		//par.rc.i_qp_constant = 25;
+		par.rc.i_qp_constant = 25;
 		//par.rc.i_qp_min = par.rc.i_qp_constant - 1;
 		//par.rc.i_qp_max = par.rc.i_qp_constant + 1;
-		//par.rc.f_qcompress = 0.0f;
+		par.rc.f_qcompress = 0.2f;
 
 		//par.rc.f_rf_constant = 12;
 		//par.rc.f_rf_constant_max = 13;
@@ -390,8 +394,9 @@ void PVRStopStreamer() {
 }
 
 
-void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , battery_deamon *hdm_batery ) {
+void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , battery_deamon *hdm_batery , motion_tracker* hdm_traker_imu) {
 	float addLatency = 0;
+	
 
 	PVR_DB_I("[PVRStartReceiveData] UDP receive started");
 
@@ -404,25 +409,51 @@ void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , ba
 			udp::socket skt(svc, { udp::v4(), PVRProp<uint16_t>({ POSE_PORT_KEY }) });
 
 			uint8_t buf[256];
-			auto quatBuf = reinterpret_cast<float *>(&buf[0]);
-			auto accBuf = reinterpret_cast<float *>(&buf[4 * 4]);
-			auto tmBuf = reinterpret_cast<long long *>(&buf[4 * 4 + 3 * 4]);
-			auto batery = reinterpret_cast<float *>(&buf[4 * 4 + 3 * 4 + 4 * 4]);
+			auto quatBuf = reinterpret_cast<float*>(&buf[0]);
+			auto accBuf = reinterpret_cast<float*>(&buf[4 * 4]);
+			auto tmBuf = reinterpret_cast<long long*>(&buf[4 * 4 + 3 * 4]);
+			auto batery = reinterpret_cast<float*>(&buf[4 * 4 + 3 * 4 + 4 * 4]);
+
 
 			while (dataRunning) {
-				function<void(const asio::error_code &, size_t)> handle = [&](auto, auto pktSz) {
+				function<void(const asio::error_code&, size_t)> handle = [&](auto, auto pktSz) {
 					//PVR_DB(err.message());
+				//	auto last_pkg_time = Clk::now();
 
 					if (pktSz > 24) {
 						//if (isValidOrient(quat))// check if quat is valid
+						
 						pose->qRotation = { quatBuf[0], quatBuf[1], quatBuf[2], quatBuf[3] }; // w x y z
 						pose->poseTimeOffset = float(Clk::now().time_since_epoch().count() - *tmBuf) / 1'000'000'000.f + addLatency; // Clk and tmBuf is in nanoseconds
-						
+						//float timedif = (Clk::now().time_since_epoch().count() - *tmBuf) / 1'000'000'000.f; 
+					//	double time_diff = double(Clk::now().time_since_epoch().count() - last_pkg_time.time_since_epoch().count()) / 1'000'000'000.f;
+
+						//PVR_DB_I("[HDM::hdm_traker_imu] debug"+ to_string(timedif));
+						// position tracker update
+						if (hdm_traker_imu->calibrated == false) {
+							hdm_traker_imu->calibrate(accBuf[0], accBuf[1], accBuf[2], quatBuf[0], quatBuf[1], quatBuf[2], quatBuf[3]);
+							PVR_DB_I("[HDM::hdm_traker_imu] sampling drift");
+						}
+						else {
+							//float qw,float qx, float qy, float qz
+							hdm_traker_imu->update_tracker(accBuf[1], accBuf[0], accBuf[2], quatBuf[0], quatBuf[1], quatBuf[2], quatBuf[3]);
+							//pose->vecAcceleration[0] = accBuf[2];
+						//	pose->vecAcceleration[1] = accBuf[0];
+							//pose->vecAcceleration[2] = accBuf[1];
+							pose->vecPosition[0] = hdm_traker_imu->position[0];
+							pose->vecPosition[1] = hdm_traker_imu->position[1];
+							pose->vecPosition[2] = hdm_traker_imu->position[2];
+							//pose->
+							//PVR_DB_I("[HDM::hdm_traker_imu] debug " + to_string(hdm_traker_imu->position[0]), " y  "+ to_string(hdm_traker_imu->position[1]) + " z" + to_string(hdm_traker_imu->position[2]) );
+						}
 						hdm_batery->level = batery[0];
 
 						vr::VRServerDriverHost()->TrackedDevicePoseUpdated(*objId, *pose, sizeof(vr::DriverPose_t));
 						
 						skt.async_receive(buffer(buf), handle);
+					//	last_pkg_time = Clk::now();
+						// update timer
+						
 					}
 				};
 				skt.async_receive(buffer(buf), handle);
@@ -438,7 +469,9 @@ void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , ba
 		{
 			PVR_DB_I(err.what());
 		}
+		
 		dataSvc = nullptr;
+	
 	});
 
 }

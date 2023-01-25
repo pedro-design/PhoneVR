@@ -31,6 +31,8 @@ ccc I_REFRESH_KEY = "intra_refresh";
 ccc BITRATE_KEY = "bitrate";
 ccc PROFILE_KEY = "profile";
 ccc CONN_TIMEOUT = "connection_timeout";
+ccc ROM_MULT = "room_mult";
+
 
 namespace 
 {
@@ -46,6 +48,7 @@ namespace
 		{POSE_PORT_KEY, 51423},
 		{CONN_PORT_KEY, 33333},
 		{CONN_TIMEOUT, 5},
+		{ROM_MULT,0.001},
 		{ENCODER_SECT, {
 			{PRESET_KEY, "ultrafast"},
 			{TUNE_KEY, "zerolatency"},
