@@ -48,11 +48,12 @@ public:
 class motion_tracker {
 private:
 	int current_sample = 0;
+	bool current_step_bin = false;
 	float x_buffer = 0;
 	float y_buffer = 0;
 	float z_buffer = 0;
-	float filter_mag = 0.1;
-	int reset_wd = 300;
+	float filter_mag = 0.3;
+	int reset_wd = 800;
 	int current_wd = 0;
 	float safe_sqr(float x) {
 		if (x > 0) {
@@ -75,16 +76,17 @@ private:
 	}
 
 public:
-	float position[3] = {0.0,0.0,0.0}; // x y z
-	float prev_position[3] = { 0.0,0.0,0.0 };
-	float drift[3] = { 0.0,0.0,0.0 };
+	double position[3] = {0.0,0.0,0.0}; // x y z
+	double prev_position[3] = { 0.0,0.0,0.0 };
+	double drift[3] = { 0.0,0.0,0.0 };
 	float prev_magnitude = 0.0;
 	float smooth = 0.1;
-	float room_mult = 0.001;
+	float room_mult = 0.005;
 	EulerAngles current_orientation;
 	bool calibrated = false;
 	bool returning = false;
-	int calibration_samples = 200;
+	int calibration_samples = 400;
+
 	bool calibrate(float x, float y , float z, float qw, float qx, float qy, float qz) {
 		//x = x *10;
 	//	y = y *10;
@@ -118,7 +120,7 @@ public:
 			drift[1] = y_buffer / current_sample;// this is our counter
 			drift[2] = z_buffer / current_sample;// this is our counter
 			calibrated = true;
-			smooth = get_vector_magnitude(drift[0], drift[1], drift[2])*1.5;
+			smooth = get_vector_magnitude(drift[0], drift[1], drift[2])*1.2;
 		
 			// return true if alredy calibrated
 			return true;
@@ -127,12 +129,27 @@ public:
 	void update_tracker(float x, float y, float z,float qw,float qx, float qy, float qz) {
 		//auto start = Clk::steady_clock::now();
 		// remove drift
-	//	x = x - drift[0];
-	//	y = y - drift[1];
-	//	z = z - drift[2];
+		
 		current_orientation.from_quaternion(qx, qy, qz, qw);
 		//get rotation vector 
 		
+		//
+		float rotx = cos(current_orientation.yaw) * cos(current_orientation.pitch);
+		float roty = sin(current_orientation.yaw) * cos(current_orientation.pitch);
+		float rotz = sin(current_orientation.pitch);
+		//
+		x = x * rotx;
+		y = y * roty;
+		z = z * rotz;
+		//
+		x = x * room_mult;
+		y = y * room_mult;
+		z = z * room_mult;
+		//
+		x = x - drift[0];
+		y = y - drift[1];
+		z = z - drift[2];
+
 		float mag = get_vector_magnitude(x, y, z);
 		// drop the noise
 		
@@ -141,13 +158,13 @@ public:
 		//z = z * 10;
 		float step_magitude = safe_sqr((prev_magnitude - mag) * (prev_magnitude - mag));
 		if (step_magitude > smooth) {
-			float rotx = cos(current_orientation.yaw) * cos(current_orientation.pitch);
-			float roty = sin(current_orientation.yaw) * cos(current_orientation.pitch);
-			float rotz = sin(current_orientation.pitch);
+			
 
-			x = x * rotx;
-			y = y * roty;
-			z = z * rotz;
+			
+
+			//x = x - drift[0];
+		//	y = y - drift[1];
+			//z = z - drift[2];
 			//use linear interpolation for moution prediction
 			
 	//		if (step_magitude > filter_mag) {
@@ -162,25 +179,25 @@ public:
 			prev_position[1] = position[1];
 			prev_position[2] = position[2];
 			//update step
-			x = x * room_mult;
-			y = y * room_mult;
-			z = z * room_mult;
+			
 
 			position[0] = position[0] + x; // x
 			position[1] = position[1] + y; // x
 			position[2] = position[2] + z; // x
 				//store the new magnitude as the old one
-			prev_magnitude = mag;
+		//	prev_magnitude = mag;
 			returning = true;
-			if (current_wd != 0) {
-				current_wd = 0;
+			if (current_wd != 0 && current_wd > 0) {
+					current_wd = current_wd - 1;
 			}
+			
 			//}
 		}
 		else {
+			
 			current_wd = current_wd + 1;
 			if (current_wd > reset_wd) {
-				reset_wd = 0;
+				current_wd = 0;
 				// if the hdm is still recenter it
 				position[0] = 0.0;
 				position[1] = 0.0;
@@ -197,9 +214,9 @@ public:
 				float diffy = position[1] - prev_position[1];
 				float diffz = position[2] - prev_position[2];
 
-				position[0] = position[0] + diffx*0.1; 
-				position[1] = position[1] + diffy*0.1; 
-				position[2] = position[2] + diffz*0.1;
+				position[0] = position[0] + diffx*0.001; 
+				position[1] = position[1] + diffy*0.001; 
+				position[2] = position[2] + diffz*0.001;
 				float distance = safe_sqr((diffx * diffx) + (diffy * diffy) + (diffz * diffz));
 				if (distance < 0.05) {
 					position[0] = prev_position[0] ; 
@@ -209,5 +226,14 @@ public:
 				}
 			}
 		}
+
+		if(current_step_bin == false){
+			prev_magnitude = mag;
+			current_step_bin = true;
+		}
+		else {
+			current_step_bin = false;
+		}
+			
 	}
 };

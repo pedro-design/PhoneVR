@@ -168,6 +168,8 @@ void PVRStartStreamer(string ip, uint16_t width, uint16_t height, function<void(
 				par.rc.i_qp_min = qp - 5;
 				par.rc.i_qp_max = qp + 5;
 			}
+			par.i_threads = 2;
+			par.b_opencl = true;
 
 
 			auto br = PVRProp<int>({ S, BITRATE_KEY });
@@ -187,7 +189,7 @@ void PVRStartStreamer(string ip, uint16_t width, uint16_t height, function<void(
 		par.rc.i_rc_method = 1;
 
 		par.rc.i_bitrate = 1000;
-		par.rc.i_vbv_max_bitrate = 1200;
+		par.rc.i_vbv_max_bitrate = 8200;
 		par.rc.i_vbv_buffer_size = 20000;
 		par.rc.f_vbv_buffer_init = 0.9f;
 
@@ -436,7 +438,7 @@ void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , ba
 						}
 						else {
 							//float qw,float qx, float qy, float qz
-							hdm_traker_imu->update_tracker(accBuf[1], accBuf[0], accBuf[2], quatBuf[0], quatBuf[1], quatBuf[2], quatBuf[3]);
+							hdm_traker_imu->update_tracker(accBuf[0], accBuf[1], accBuf[2], quatBuf[0], quatBuf[1], quatBuf[2], quatBuf[3]);
 							//pose->vecAcceleration[0] = accBuf[2];
 						//	pose->vecAcceleration[1] = accBuf[0];
 							//pose->vecAcceleration[2] = accBuf[1];
@@ -444,7 +446,7 @@ void PVRStartReceiveData(string ip, vr::DriverPose_t *pose, uint32_t *objId , ba
 							pose->vecPosition[1] = hdm_traker_imu->position[1];
 							pose->vecPosition[2] = hdm_traker_imu->position[2];
 							//pose->
-							//PVR_DB_I("[HDM::hdm_traker_imu] debug " + to_string(hdm_traker_imu->position[0]), " y  "+ to_string(hdm_traker_imu->position[1]) + " z" + to_string(hdm_traker_imu->position[2]) );
+							//PVR_DB_I("[HDM::hdm_traker_imu] debug " + to_string(hdm_traker_imu->position[0])+ " y  "+ to_string(hdm_traker_imu->position[1]) + " z" + to_string(hdm_traker_imu->position[2]) );
 						}
 						hdm_batery->level = batery[0];
 
