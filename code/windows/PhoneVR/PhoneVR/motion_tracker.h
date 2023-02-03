@@ -6,14 +6,64 @@
 
 #define pi  3.141592653;
 
+class DC_blocker {
+public:
+	float prev_input = 0;
+	float prev_output = 0;
+	float out = 0;
+	void reset() {
+		prev_input = 0;
+		prev_output = 0;
+		out = 0;
+	}
+	float update(float input) {
+		out = input - prev_input + 0.995 * prev_output;
+		prev_input = input;
+		prev_output = out;
+		return out;
+	}
+};
 
 
 using namespace std;
+
+
+
+class Vector3d {
+public :
+	float X = 0;
+	float Y = 0;
+	float Z = 0;
+	void Transform(float qx, float qy, float qz, float qw)
+	{
+		float num12 = qx + qx;
+		float num2 = qy + qy;
+		float num = qz + qz;
+		float num11 = qw * num12;
+		float num10 = qw * num2;
+		float num9 = qw * num;
+		float num8 = qx * num12;
+		float num7 = qx * num2;
+		float num6 = qx * num;
+		float num5 = qy * num2;
+		float num4 = qy * num;
+		float num3 = qy * num;
+		float num15 = ((X * ((1.0f - num5) - num3)) + (Y * (num7 - num9))) + (Z * (num6 + num10));
+		float num14 = ((X * (num7 + num9)) + (Y * ((1.0f - num8) - num3))) + (Z * (num4 - num11));
+		float num13 = ((X * (num6 - num10)) + (Y * (num4 + num11))) + (Z * ((1.0f - num8) - num5));
+		X = num15;
+		Y = num14;
+		Z = num13;
+	
+	}
+};
 
 class EulerAngles
 {
 private : 
 	double half_pi = (3.141592653 / 2);
+	
+
 public:
 	double roll; // x
 	double pitch; // y
@@ -53,8 +103,14 @@ private:
 	float y_buffer = 0;
 	float z_buffer = 0;
 	float filter_mag = 0.3;
-	int reset_wd = 800;
+	int reset_wd = 600;
 	int current_wd = 0;
+
+	DC_blocker x_filter;
+	DC_blocker y_filter;
+	DC_blocker z_filter;
+
+
 	float safe_sqr(float x) {
 		if (x > 0) {
 			return sqrt(x);
@@ -82,31 +138,46 @@ public:
 	float prev_magnitude = 0.0;
 	float smooth = 0.1;
 	float room_mult = 0.005;
-	EulerAngles current_orientation;
+	Vector3d acceleration_relative;
 	bool calibrated = false;
 	bool returning = false;
 	int calibration_samples = 400;
 
+	
 	bool calibrate(float x, float y , float z, float qw, float qx, float qy, float qz) {
 		//x = x *10;
 	//	y = y *10;
 	//	z = z *10;
-		current_orientation.from_quaternion(qx, qy, qz, qw);
+	//	current_orientation.from_quaternion(qx, qy, qz, qw);
 		//get the direction vector
-		float rotx = cos(current_orientation.yaw) * cos(current_orientation.pitch);
-		float roty = sin(current_orientation.yaw) * cos(current_orientation.pitch);
-		float rotz = sin(current_orientation.pitch);
+		//float rotx = cos(current_orientation.yaw) * cos(current_orientation.pitch);
+		//float roty = sin(current_orientation.yaw) * cos(current_orientation.pitch);
+		//float rotz = sin(current_orientation.pitch);
 
 		//multiplly  the aceleration * direction_unit_vector
-		x = x * rotx;
-		y = y * roty;
-		z = z * rotz;
+		//x = x * rotx;
+		//y = y * roty;
+		//z = z * rotz;
 
 		// if the axis is inverted
 		//z = z * -1;
-		x = x * room_mult;
-		y = y * room_mult;
-		z = z * room_mult;
+
+		// update the vector3d
+		acceleration_relative.X = x;
+		acceleration_relative.Y = y;
+		acceleration_relative.Z = z;
+
+		//now rotate the vector
+		acceleration_relative.Transform(qx, qy, qz, qw);
+		// now scale it to the room
+		x = acceleration_relative.X * room_mult;
+		y = acceleration_relative.Y * room_mult;
+		z = acceleration_relative.Z * room_mult;
+
+		x = x_filter.update(x);
+		y = y_filter.update(y);
+		z = z_filter.update(z);
+
 		if (current_sample < calibration_samples) {
 			// the mean of the noise will be used as drift value
 			x_buffer = x_buffer + x;
@@ -130,25 +201,37 @@ public:
 		//auto start = Clk::steady_clock::now();
 		// remove drift
 		
-		current_orientation.from_quaternion(qx, qy, qz, qw);
+		//current_orientation.from_quaternion(qx, qy, qz, qw);
 		//get rotation vector 
 		
 		//
-		float rotx = cos(current_orientation.yaw) * cos(current_orientation.pitch);
-		float roty = sin(current_orientation.yaw) * cos(current_orientation.pitch);
-		float rotz = sin(current_orientation.pitch);
+		//float rotx = cos(current_orientation.yaw) * cos(current_orientation.pitch);
+		//float roty = sin(current_orientation.yaw) * cos(current_orientation.pitch);
+		//float rotz = sin(current_orientation.pitch);
 		//
-		x = x * rotx;
-		y = y * roty;
-		z = z * rotz;
+		//x = x * rotx;
+		//y = y * roty;
+		//z = z * rotz;
 		//
-		x = x * room_mult;
-		y = y * room_mult;
-		z = z * room_mult;
+		// update the vector3d
+		acceleration_relative.X = x;
+		acceleration_relative.Y = y;
+		acceleration_relative.Z = z;
+
+		//now rotate the vector
+		acceleration_relative.Transform(qx, qy, qz, qw);
+		// now scale it to the room
+		x = acceleration_relative.X * room_mult;
+		y = acceleration_relative.Y * room_mult;
+		z = acceleration_relative.Z * room_mult;
 		//
 		x = x - drift[0];
 		y = y - drift[1];
 		z = z - drift[2];
+
+		x = x_filter.update(x);
+		y = y_filter.update(y);
+		z = z_filter.update(z);
 
 		float mag = get_vector_magnitude(x, y, z);
 		// drop the noise
@@ -206,6 +289,11 @@ public:
 				prev_position[0] = 0.0;
 				prev_position[1] = 0.0;
 				prev_position[2] = 0.0;
+
+				x_filter.reset();
+				y_filter.reset();
+				z_filter.reset();
+
 				returning = false;
 			}
 			if (returning == true) {
